@@ -1,5 +1,7 @@
 package grell.processors.demo;
 
+import org.apache.maven.surefire.shared.compress.archivers.tar.TarArchiveEntry;
+import org.apache.maven.surefire.shared.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
 
@@ -9,8 +11,8 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class ZipOperations {
-    public static FlowFile getNextFile(FlowFile flowFile, ZipEntry zipEntry, ZipInputStream zipInputStream, ProcessSession session) {
+public class TarOperations {
+    public static FlowFile getNextFile(FlowFile flowFile, TarArchiveEntry tarArchiveEntry, TarArchiveInputStream tarArchiveInputStream, ProcessSession session) {
         FlowFile newFlowFile = session.create(flowFile);
         OutputStream outputStream = session.write(newFlowFile);
 
@@ -21,7 +23,7 @@ public class ZipOperations {
                 final byte[] buf = new byte[1024];
                 int read = 0;
                 int length;
-                while ((length = zipInputStream.read(buf, 0, buf.length)) >= 0) {
+                while ((length = tarArchiveInputStream.read(buf, 0, buf.length)) >= 0) {
                     outputStream.write(buf, 0, length);
                 }
             } catch (IOException ioex) {
@@ -29,18 +31,16 @@ public class ZipOperations {
             }
 
             outputStream.close();
-            var lastModifiedTime = String.valueOf(zipEntry.getLastModifiedTime());
-            var creationTime = String.valueOf(zipEntry.getCreationTime());
-            var lastAccessTime = String.valueOf(zipEntry.getLastAccessTime());
-
+            var lastModifiedTime = String.valueOf(tarArchiveEntry.getLastModifiedTime());
+            var creationTime = String.valueOf(tarArchiveEntry.getCreationTime());
+            var lastAccessTime = String.valueOf(tarArchiveEntry.getLastAccessTime());
             String directoryPath = "";
             String filename = "";
-
-            if (zipEntry.getName().contains("/")) {
-                directoryPath = zipEntry.getName().substring(0, zipEntry.getName().lastIndexOf('/'));
-                filename = zipEntry.getName().substring(zipEntry.getName().lastIndexOf('/') + 1);
+            if (tarArchiveEntry.getName().contains("/")) {
+                directoryPath = tarArchiveEntry.getName().substring(0, tarArchiveEntry.getName().lastIndexOf('/'));
+                filename = tarArchiveEntry.getName().substring(tarArchiveEntry.getName().lastIndexOf('/') + 1);
             } else {
-                filename = zipEntry.getName();
+                filename = tarArchiveEntry.getName();
                 directoryPath = "/";
 
             }

@@ -16,6 +16,7 @@
  */
 package grell.processors.demo;
 
+import org.apache.maven.surefire.shared.compress.archivers.tar.TarArchiveEntry;
 import org.apache.maven.surefire.shared.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
@@ -135,9 +136,25 @@ public class Unpack extends AbstractProcessor {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }  else if (mimeType.equals("application/tar")) {
+        }  else if (mimeType.equals("application/x-tar")) {
             getLogger().info("Decompress tarfiles" + mimeType);
-//            TarArchiveInputStream t = new TarArchiveInputStream();
+            try {
+                TarOperations tarOperations = new TarOperations();
+    //            TarArchiveInputStream t = new TarArchiveInputStream();
+                InputStream inputStream = session.read(flowFile);
+                TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream);
+                TarArchiveEntry tarArchiveEntry;
+                while((tarArchiveEntry = tarInputStream.getNextEntry()) != null) {
+                    if (!tarArchiveEntry.isDirectory()) {
+                        var newFlowFile = tarOperations.getNextFile(flowFile, tarArchiveEntry, tarInputStream, session);
+                        session.transfer(newFlowFile, RELATIONSHIP_SUCCESS);
+                    }
+                }
+                tarInputStream.close();
+                session.remove(flowFile);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
         }
     }
