@@ -124,7 +124,7 @@ public class Unpack extends AbstractProcessor {
                 InputStream inputStream = session.read(flowFile);
                 ZipInputStream zstdInputStream = new ZipInputStream(inputStream);
 
-                ZipEntry entry; // = zstdInputStream.getNextEntry();
+                ZipEntry entry;
                 while((entry = zstdInputStream.getNextEntry()) != null) {
                     if (!entry.isDirectory()) {
                         var newFlowFile = zipOperations.getNextFile(flowFile, entry, zstdInputStream, session);
@@ -140,7 +140,6 @@ public class Unpack extends AbstractProcessor {
             getLogger().info("Decompress tarfiles" + mimeType);
             try {
                 TarOperations tarOperations = new TarOperations();
-    //            TarArchiveInputStream t = new TarArchiveInputStream();
                 InputStream inputStream = session.read(flowFile);
                 TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream);
                 TarArchiveEntry tarArchiveEntry;
@@ -155,7 +154,6 @@ public class Unpack extends AbstractProcessor {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
         }
     }
 }
