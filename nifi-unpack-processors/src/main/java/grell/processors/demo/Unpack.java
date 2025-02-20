@@ -16,6 +16,7 @@
  */
 package grell.processors.demo;
 
+import org.apache.maven.surefire.shared.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
@@ -103,6 +104,7 @@ public class Unpack extends AbstractProcessor {
         getLogger().info("Mimetype = " + mimeType);
 
         if (mimeType.equals("application/zstd")) {
+            getLogger().info("Decompress zstdfiles" + mimeType);
             ZstdOperations zstdOperations = new ZstdOperations();
             try {
                 var newFlowFile = zstdOperations.decompress(flowFile, session);
@@ -130,30 +132,13 @@ public class Unpack extends AbstractProcessor {
                 }
                 zstdInputStream.close();
                 session.remove(flowFile);
-
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }  else if (mimeType.equals("application/tar")) {
+            getLogger().info("Decompress tarfiles" + mimeType);
+//            TarArchiveInputStream t = new TarArchiveInputStream();
 
-        }
-
-        }
-
-    private static void extractFile(ZipEntry entry, ZipInputStream is)
-            throws IOException {
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(entry.getName());
-            final byte[] buf = new byte[1024];
-            int read = 0;
-            int length;
-            while ((length = is.read(buf, 0, buf.length)) >= 0) {
-                fos.write(buf, 0, length);
-            }
-        } catch (IOException ioex) {
-            fos.close();
         }
     }
-
-
 }

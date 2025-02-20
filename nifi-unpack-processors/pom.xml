@@ -41,6 +41,11 @@
             <version>2.7</version>
             <type>maven-plugin</type>
         </dependency>
+        <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-shared-utils</artifactId>
+            <version>3.5.2</version>
+        </dependency>
 
     </dependencies>
 </project>
